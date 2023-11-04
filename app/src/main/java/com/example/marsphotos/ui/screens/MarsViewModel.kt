@@ -64,7 +64,7 @@ class MarsViewModel(private val marsPhotosRepository: MarsPhotosRepository) : Vi
 
                 val listResult = marsPhotosRepository.getMarsPhotos()
                 MarsUiState.Sucess(
-                    "Success  an list of ${listResult.size} of photos retrived"
+                    "Success an list of ${listResult.size} photos received"
                 )
             } catch (e: IOException) {
                 Log.e(TAG, e.toString())
