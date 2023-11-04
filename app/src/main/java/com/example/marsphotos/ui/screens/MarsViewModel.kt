@@ -20,10 +20,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
+
 import androidx.lifecycle.viewModelScope
-import com.example.marsphotos.network.MarsApi
-import com.example.marsphotos.network.MarsPhoto
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.marsphotos.MarsPhotosApplication
+import com.example.marsphotos.data.MarsPhotosRepository
+import com.example.marsphotos.data.NetworkMarsPhotosRepository
+import com.example.marsphotos.model.MarsPhoto
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 import java.io.IOException
 
 sealed interface MarsUiState {
@@ -32,7 +40,9 @@ sealed interface MarsUiState {
     object Loading: MarsUiState
 }
 
-class MarsViewModel : ViewModel() {
+const val TAG = "MarsViewModel"
+
+class MarsViewModel(private val marsPhotosRepository: MarsPhotosRepository) : ViewModel() {
     /** The mutable State that stores the status of the most recent request */
     var marsUiState: MarsUiState by mutableStateOf(MarsUiState.Loading)
         private set
@@ -51,15 +61,30 @@ class MarsViewModel : ViewModel() {
    private fun getMarsPhotos() {
         viewModelScope.launch {
             marsUiState = try {
-                val listResult = MarsApi.retrofitService.getPhotos()
+
+                val listResult = marsPhotosRepository.getMarsPhotos()
                 MarsUiState.Sucess(
                     "Success  an list of ${listResult.size} of photos retrived"
                 )
             } catch (e: IOException) {
-                Log.e("MarsViewModel", e.toString())
+                Log.e(TAG, e.toString())
+                MarsUiState.Error
+            } catch (e: HttpException) {
+                Log.e(TAG, e.toString())
                 MarsUiState.Error
             }
 
+        }
+    }
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                // puxa o Application definido no manifest
+                val application = (this[APPLICATION_KEY] as MarsPhotosApplication)
+                val marsPhotoRepository = application.container.marsPhotosRepository
+                MarsViewModel(marsPhotoRepository)
+            }
         }
     }
 }
