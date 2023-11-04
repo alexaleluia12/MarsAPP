@@ -79,6 +79,8 @@ dependencies {
     implementation("androidx.core:core-ktx:1.10.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
+    // load image from internet efficiently
+    implementation("io.coil-kt:coil-compose:2.4.0")
 
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
